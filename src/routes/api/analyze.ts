@@ -68,8 +68,8 @@ export const Route = createFileRoute("/api/analyze")({
         const parsed = analyzeRequestSchema.safeParse(body);
         if (!parsed.success) return json({ error: parsed.error.issues[0]?.message ?? "Invalid input." }, 400);
 
-        const { runAnalysis, AiConfigError, AiUpstreamError } = await import("@/lib/analyze.server");
         try {
+          const { runAnalysis, AiConfigError, AiUpstreamError } = await import("@/lib/analyze.server");
           const analysis = await runAnalysis(
             parsed.data.resume,
             parsed.data.jobDescription,
