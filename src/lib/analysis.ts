@@ -34,6 +34,8 @@ export type SkillStatus = z.infer<typeof skillStatus>;
 export const analysisSchema = z.object({
   roleTitle: z.string().max(200),
   summary: z.string().max(1500),
+  /** Mentor-style opening: existing strengths, relevant experience, and the most important next steps. */
+  mentorNote: z.string().max(1500),
   skills: z
     .array(
       z.object({
@@ -47,19 +49,30 @@ export const analysisSchema = z.object({
       }),
     )
     .max(30),
+  /** One integrated project that ties the core priorities together. */
+  portfolioProject: z.object({
+    title: z.string().max(160),
+    description: z.string().max(700),
+    whyItFits: z.string().max(500),
+  }),
   roadmap: z
     .array(
       z.object({
         skill: z.string().max(120),
+        tier: z.enum(["core", "advanced"]),
         priority: z.number().int().min(1).max(30),
-        objective: z.string().max(500),
-        projectIdea: z.string().max(700),
-        steps: z.array(z.string().max(400)).min(1).max(6),
+        whyItMatters: z.string().max(600),
+        whatToLearn: z.string().max(600),
+        howToLearn: z.string().max(600),
+        buildOrPractice: z.string().max(700),
+        doneWhen: z.string().max(400),
         estimatedEffort: z.string().max(80),
         resourceCategory: z.string().max(160),
       }),
     )
     .max(8),
+  /** Concrete, manageable actions for the next 7 days. */
+  thisWeek: z.array(z.string().max(300)).min(1).max(5),
   resumeSuggestions: z
     .array(
       z.object({
