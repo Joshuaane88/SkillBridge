@@ -23,16 +23,16 @@ describe("output safety", () => {
   it("drops fabricated evidence and downgrades the skill", () => {
     const fake: Analysis = {
       ...DEMO_ANALYSIS,
-      skills: [{ ...DEMO_ANALYSIS.skills[0], status: "demonstrated", resumeEvidence: ["Led a team of 40 engineers at Google"] }],
+      skills: [{ ...DEMO_ANALYSIS.skills[0]!, status: "demonstrated", resumeEvidence: ["Led a team of 40 engineers at Google"] }],
     };
     const out = verifyAgainstResume(fake, SAMPLE_RESUME);
-    expect(out.skills[0].resumeEvidence).toEqual([]);
-    expect(out.skills[0].status).toBe("not_demonstrated");
+    expect(out.skills[0]!.resumeEvidence).toEqual([]);
+    expect(out.skills[0]!.status).toBe("not_demonstrated");
   });
   it("keeps verbatim evidence", () => {
     const out = verifyAgainstResume(DEMO_ANALYSIS, SAMPLE_RESUME);
-    expect(out.skills[0].resumeEvidence.length).toBe(1);
-    expect(out.skills[0].status).toBe("demonstrated");
+    expect(out.skills[0]!.resumeEvidence.length).toBe(1);
+    expect(out.skills[0]!.status).toBe("demonstrated");
   });
 });
 
