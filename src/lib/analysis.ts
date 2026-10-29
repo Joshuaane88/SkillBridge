@@ -166,7 +166,7 @@ export function analysisToMarkdown(a: AnalysisResult, done: Record<string, boole
   lines.push(`# SkillBridge report — ${a.roleTitle}`);
   lines.push("");
   if (a.mode === "demo") lines.push("> Demonstration report using fictional sample data. Not an AI analysis.\n");
-  lines.push(`Generated ${new Date(a.createdAt).toLocaleString()}`, "", a.summary, "");
+  lines.push(`Generated ${new Date(a.createdAt).toLocaleString()}`, "", a.summary, "", a.mentorNote, "");
   for (const st of ["demonstrated", "partial", "not_demonstrated"] as const) {
     lines.push(`## ${STATUS_LABEL[st]}`, "");
     for (const s of a.skills.filter((x) => x.status === st)) {
@@ -176,12 +176,23 @@ export function analysisToMarkdown(a: AnalysisResult, done: Record<string, boole
       lines.push(`- Reasoning: ${s.reasoning}`, "");
     }
   }
+  lines.push("## What to do this week", "");
+  a.thisWeek.forEach((t, i) => lines.push(`- [${done[`week-${i}`] ? "x" : " "}] ${t}`));
+  lines.push("", "## Portfolio project", "");
+  lines.push(`### ${a.portfolioProject.title}`, a.portfolioProject.description, `Why it fits: ${a.portfolioProject.whyItFits}`, "");
   lines.push("## Roadmap", "");
   a.roadmap.forEach((r, i) => {
-    lines.push(`### ${i + 1}. ${r.skill} — ${r.estimatedEffort}`);
-    lines.push(`Objective: ${r.objective}`, `Project: ${r.projectIdea}`, `Resources: ${r.resourceCategory}`);
-    r.steps.forEach((s, j) => lines.push(`- [${done[`${i}-${j}`] ? "x" : " "}] ${s}`));
-    lines.push("");
+    lines.push(`### ${i + 1}. ${r.skill} (${r.tier}) — ${r.estimatedEffort}`);
+    lines.push(
+      `Why it matters: ${r.whyItMatters}`,
+      `What to learn: ${r.whatToLearn}`,
+      `How to learn it: ${r.howToLearn}`,
+      `Build or practice: ${r.buildOrPractice}`,
+      `Done when: ${r.doneWhen}`,
+      `Resources: ${r.resourceCategory}`,
+      `- [${done[`item-${i}`] ? "x" : " "}] Completed`,
+      "",
+    );
   });
   lines.push("## Resume suggestions", "");
   a.resumeSuggestions.forEach((r) => lines.push(`- Original: "${r.original}"`, `  Suggested: ${r.suggestion}`, `  Why: ${r.explanation}`));
