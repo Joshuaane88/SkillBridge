@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import { ResumeUpload } from "@/components/ResumeUpload";
+import { Button } from "@/components/ui/button";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Results, progressKey } from "@/components/Results";
@@ -23,7 +25,7 @@ export const Route = createFileRoute("/analyze")({
 
 const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
 
-function Field({ id, label, hint, value, onChange, min, max }: { id: string; label: string; hint: string; value: string; onChange: (v: string) => void; min: number; max: number }) {
+function Field({ id, label, hint, value, onChange, min, max, children, disabled }: { id: string; label: string; hint: string; value: string; onChange: (v: string) => void; min: number; max: number; children?: ReactNode; disabled?: boolean }) {
   const len = value.trim().length;
   return (
     <div className="flex flex-col">
@@ -34,12 +36,14 @@ function Field({ id, label, hint, value, onChange, min, max }: { id: string; lab
         </span>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">{hint}</p>
+      {children}
       <textarea
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         spellCheck={false}
         autoComplete="off"
+        disabled={disabled}
         className="mt-4 min-h-[22rem] w-full resize-y rounded-sm border border-border bg-paper p-4 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-foreground"
         placeholder={len < min ? "Paste text here…" : undefined}
       />
@@ -54,10 +58,13 @@ function Workspace() {
   const [error, setError] = useState<{ msg: string; notConfigured?: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingVisible, setLoadingVisible] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [uploadKey, setUploadKey] = useState(0);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const run = async () => {
+    if (pdfBusy || loading) return;
     setError(null);
     const parsed = analyzeRequestSchema.safeParse({ resume, jobDescription: job, acknowledged: ack });
     if (!parsed.success) return setError({ msg: parsed.error.issues[0]?.message ?? "Please check your input." });
@@ -97,6 +104,8 @@ function Workspace() {
 
   const clearAll = () => {
     abortRef.current?.abort();
+    setUploadKey((key) => key + 1);
+    setPdfBusy(false);
     setResume("");
     setJob("");
     setAck(false);
@@ -130,18 +139,22 @@ function Workspace() {
           <h1 className="font-display mt-3 text-4xl font-light sm:text-5xl">Two documents. One honest comparison.</h1>
           <div className="mt-6 flex flex-wrap gap-3 text-sm">
             <button
-              onClick={() => { setResume(SAMPLE_RESUME); setJob(SAMPLE_JOB); setError(null); }}
+               disabled={pdfBusy}
+               onClick={() => { setUploadKey((key) => key + 1); setResume(SAMPLE_RESUME); setJob(SAMPLE_JOB); setError(null); }}
               className="rounded-sm border border-border px-3 py-1.5 hover:border-foreground"
             >
               Load fictional example
             </button>
-            <button onClick={runDemo} className="rounded-sm border border-border px-3 py-1.5 hover:border-foreground">
+            <button onClick={runDemo} disabled={pdfBusy} className="rounded-sm border border-border px-3 py-1.5 hover:border-foreground">
               View demonstration (no AI)
             </button>
           </div>
 
           <div className="mt-10 grid gap-10 md:grid-cols-2">
-            <Field id="resume" label="Resume / Experience" hint="Paste your resume, or describe your work, projects and coursework." value={resume} onChange={setResume} min={LIMITS.resumeMin} max={LIMITS.resumeMax} />
+            <Field id="resume" label="Resume / Experience" hint="Upload a PDF, paste your resume, or describe your experience." value={resume} onChange={setResume} min={LIMITS.resumeMin} max={LIMITS.resumeMax} disabled={pdfBusy}>
+              <ResumeUpload key={uploadKey} onText={setResume} onBusy={setPdfBusy} />
+              {!pdfBusy && resume.trim().length > 0 && (resume.trim().length < LIMITS.resumeMin || resume.trim().length > LIMITS.resumeMax) ? <p role="alert" className="mt-3 text-sm text-destructive">Resume text must be 150–20,000 characters. Edit the text below before analyzing.</p> : null}
+            </Field>
             <Field id="job" label="Target job description" hint="Paste the full posting, including requirements." value={job} onChange={setJob} min={LIMITS.jobMin} max={LIMITS.jobMax} />
           </div>
 
@@ -153,13 +166,13 @@ function Workspace() {
               </span>
             </label>
             <div className="md:col-span-4 md:text-right">
-              <button
+              <Button
                 onClick={run}
-                disabled={loading}
+                disabled={loading || pdfBusy || resume.trim().length < LIMITS.resumeMin || resume.trim().length > LIMITS.resumeMax}
                 className="w-full rounded-sm bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-opacity disabled:opacity-50 md:w-auto"
               >
                 Analyze my skills
-              </button>
+              </Button>
             </div>
           </div>
 

@@ -16,6 +16,7 @@ export const Route = createFileRoute("/privacy")({
 });
 
 const items = [
+  ["PDF uploads", "PDF text is extracted entirely in your browser. The original file is never uploaded or stored. Only the editable extracted text is sent when you choose AI analysis and confirm consent. Scanned PDFs are not supported yet."],
   ["What is sent", "When you run an AI analysis, your resume and job description text are sent to our server and forwarded to an AI provider through the Lovable AI Gateway. You must confirm this before anything is sent."],
   ["What is stored", "Nothing on our servers. Your text and results live only in this browser tab's memory. Roadmap checkmarks are saved in your browser's local storage, and Clear my data removes them."],
   ["What is logged", "Server logs record only error categories (for example, 'rate limited'). Resume content is never logged, placed in URLs, or sent to analytics."],
