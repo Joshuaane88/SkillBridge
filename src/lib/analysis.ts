@@ -9,10 +9,21 @@ export const LIMITS = {
   bodyMaxBytes: 80_000,
 } as const;
 
+/** Study preferences that shape the roadmap workload. */
+export const preferencesSchema = z.object({
+  weeklyHours: z.number().int().min(1, "Choose at least 1 hour per week.").max(40, "Keep it realistic (40 hours per week max)."),
+  timelineWeeks: z.number().int().min(2, "Give yourself at least 2 weeks.").max(52, "Keep the horizon under a year."),
+  careerGoal: z.string().trim().max(200, "Keep your goal under 200 characters.").optional(),
+});
+export type Preferences = z.infer<typeof preferencesSchema>;
+
+export const DEFAULT_PREFERENCES: Preferences = { weeklyHours: 5, timelineWeeks: 12 };
+
 export const analyzeRequestSchema = z.object({
   resume: z.string().trim().min(LIMITS.resumeMin, "Your resume or experience needs a bit more detail (at least 150 characters).").max(LIMITS.resumeMax, "Your resume is too long (20,000 characters max)."),
   jobDescription: z.string().trim().min(LIMITS.jobMin, "The job description needs a bit more detail (at least 100 characters).").max(LIMITS.jobMax, "The job description is too long (12,000 characters max)."),
   acknowledged: z.literal(true, { errorMap: () => ({ message: "Please confirm you understand your text is sent to an AI provider." }) }),
+  preferences: preferencesSchema.optional(),
 });
 export type AnalyzeRequest = z.infer<typeof analyzeRequestSchema>;
 
