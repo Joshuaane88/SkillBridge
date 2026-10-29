@@ -47,8 +47,10 @@ export function Results({ result, onReset }: { result: AnalysisResult; onReset: 
   }, [result.skills]);
   const total = result.skills.length || 1;
   const shown = filter === "all" ? result.skills : result.skills.filter((s) => s.status === filter);
-  const totalSteps = result.roadmap.reduce((n, r) => n + r.steps.length, 0);
+  const totalSteps = result.thisWeek.length + result.roadmap.length;
   const doneSteps = Object.values(done).filter(Boolean).length;
+  const coreItems = result.roadmap.filter((r) => r.tier === "core");
+  const advancedItems = result.roadmap.filter((r) => r.tier === "advanced");
 
   const exportMd = () => {
     const blob = new Blob([analysisToMarkdown(result, done)], { type: "text/markdown" });
@@ -73,6 +75,7 @@ export function Results({ result, onReset }: { result: AnalysisResult; onReset: 
           <p className="eyebrow">Skill analysis for</p>
           <h1 className="font-display mt-3 text-4xl font-light leading-tight sm:text-5xl">{result.roleTitle}</h1>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">{result.summary}</p>
+          {result.mentorNote ? <p className="mt-4 max-w-2xl leading-relaxed">{result.mentorNote}</p> : null}
         </div>
         <div className="no-print flex flex-wrap items-start gap-2 md:col-span-4 md:justify-end">
           <button onClick={() => window.print()} className="inline-flex items-center gap-2 rounded-sm border border-border px-3 py-2 text-sm hover:border-foreground">
