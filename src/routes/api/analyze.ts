@@ -68,8 +68,15 @@ export const Route = createFileRoute("/api/analyze")({
         const parsed = analyzeRequestSchema.safeParse(body);
         if (!parsed.success) return json({ error: parsed.error.issues[0]?.message ?? "Invalid input." }, 400);
 
+        let mod: typeof import("@/lib/analyze.server");
         try {
-          const { runAnalysis, AiConfigError, AiUpstreamError } = await import("@/lib/analyze.server");
+          mod = await import("@/lib/analyze.server");
+        } catch {
+          console.error("[analyze] AI module failed to load");
+          return json({ error: "The analysis service failed to start. Please try again." }, 503);
+        }
+        const { runAnalysis, AiConfigError, AiUpstreamError } = mod;
+        try {
           const analysis = await runAnalysis(
             parsed.data.resume,
             parsed.data.jobDescription,
