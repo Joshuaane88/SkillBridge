@@ -6,6 +6,7 @@ Do not open a public issue containing exploit details. We aim to respond within 
 
 ## Implemented controls (tested in `src/test/analysis.test.ts` where noted)
 - No accounts, no database, no server-side storage of resumes or results.
+- PDF resume files are read in the browser only (PDF.js with a dynamically imported worker): 5 MB cap, extension and signature checks, no upload, no storage, no object URLs. Extracted text is editable and passes the same validation and consent gate as pasted text (tested in `src/test/pdf-resume.test.tsx`).
 - AI key is server-only (`process.env.LOVABLE_API_KEY`), never in the browser bundle.
 - `/api/analyze`: same-origin check (plus `ALLOWED_ORIGINS`), 80 KB body cap, Zod validation of types/lengths, required consent flag (tested).
 - Best-effort rate limiting: 5 analyses / 10 min per client IP, 100 / 10 min per server instance (tested).
@@ -17,6 +18,7 @@ Do not open a public issue containing exploit details. We aim to respond within 
 ## Known gaps
 - Rate limits are in-memory per server instance, not global; a distributed attacker can exceed them. Use a CDN/WAF rule or shared store in production.
 - No site-wide CSP / HSTS headers are set by the app; configure them at your host/CDN. HTTPS depends on the host.
+- Scanned (image-only) and password-protected PDFs are rejected rather than guessed at. Complex multi-column layouts can extract in imperfect reading order, which is why the extracted text stays editable before analysis.
 - No explicit request timeout: client Cancel aborts the upstream call; otherwise the platform's request limits apply.
 - Prompt injection cannot be fully prevented; the controls above reduce, not eliminate, risk.
 - Passing tests or scanners does not mean the app is secure.
