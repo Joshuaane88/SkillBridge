@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Results, progressKey } from "@/components/Results";
-import { analyzeRequestSchema, LIMITS, type Analysis, type AnalysisResult } from "@/lib/analysis";
+import { analyzeRequestSchema, DEFAULT_PREFERENCES, LIMITS, type Analysis, type AnalysisResult } from "@/lib/analysis";
 import { DEMO_ANALYSIS, SAMPLE_JOB, SAMPLE_RESUME } from "@/lib/samples";
 import { cn } from "@/lib/utils";
 

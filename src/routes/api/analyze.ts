@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { analyzeRequestSchema, LIMITS } from "@/lib/analysis";
+import { analyzeRequestSchema, DEFAULT_PREFERENCES, LIMITS } from "@/lib/analysis";
 import { createRateLimiter } from "@/lib/rate-limit";
 
 // 5 analyses per client per 10 minutes, 100 per instance per 10 minutes.
