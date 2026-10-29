@@ -55,6 +55,9 @@ function Workspace() {
   const [resume, setResume] = useState("");
   const [job, setJob] = useState("");
   const [ack, setAck] = useState(false);
+  const [weeklyHours, setWeeklyHours] = useState(DEFAULT_PREFERENCES.weeklyHours);
+  const [timelineWeeks, setTimelineWeeks] = useState(DEFAULT_PREFERENCES.timelineWeeks);
+  const [careerGoal, setCareerGoal] = useState("");
   const [error, setError] = useState<{ msg: string; notConfigured?: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingVisible, setLoadingVisible] = useState(false);
