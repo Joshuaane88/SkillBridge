@@ -83,11 +83,11 @@ function Landing() {
 
         <section className="mx-auto mt-24 max-w-6xl px-5 sm:px-8">
           <div className="grid gap-8 border-y border-border py-12 md:grid-cols-12">
-            <p className="font-display text-3xl leading-snug md:col-span-7">
-              "Not demonstrated" means your resume doesn't show it yet — not that you can't do it.
-            </p>
+            <h2 className="font-display text-3xl leading-snug md:col-span-7">
+              Your resume doesn't tell your whole story.
+            </h2>
             <p className="leading-relaxed text-muted-foreground md:col-span-5">
-              skillbridge separates missing evidence from missing ability, quotes your own words as proof, and never scores your odds of getting hired. You decide what to act on.
+              A skill that doesn't appear on your resume isn't necessarily one you don't have. SkillBridge helps you spot what's missing from the page and gives you ideas for what to work on next. The decisions are always yours.
             </p>
           </div>
         </section>
