@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { Results, progressKey } from "@/components/Results";
-import { analyzeRequestSchema, LIMITS, type Analysis, type AnalysisResult } from "@/lib/analysis";
+import { analyzeRequestSchema, DEFAULT_PREFERENCES, LIMITS, type Analysis, type AnalysisResult } from "@/lib/analysis";
 import { DEMO_ANALYSIS, SAMPLE_JOB, SAMPLE_RESUME } from "@/lib/samples";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +55,9 @@ function Workspace() {
   const [resume, setResume] = useState("");
   const [job, setJob] = useState("");
   const [ack, setAck] = useState(false);
+  const [weeklyHours, setWeeklyHours] = useState(DEFAULT_PREFERENCES.weeklyHours);
+  const [timelineWeeks, setTimelineWeeks] = useState(DEFAULT_PREFERENCES.timelineWeeks);
+  const [careerGoal, setCareerGoal] = useState("");
   const [error, setError] = useState<{ msg: string; notConfigured?: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingVisible, setLoadingVisible] = useState(false);
@@ -66,7 +69,12 @@ function Workspace() {
   const run = async () => {
     if (pdfBusy || loading) return;
     setError(null);
-    const parsed = analyzeRequestSchema.safeParse({ resume, jobDescription: job, acknowledged: ack });
+    const parsed = analyzeRequestSchema.safeParse({
+      resume,
+      jobDescription: job,
+      acknowledged: ack,
+      preferences: { weeklyHours, timelineWeeks, careerGoal: careerGoal.trim() || undefined },
+    });
     if (!parsed.success) return setError({ msg: parsed.error.issues[0]?.message ?? "Please check your input." });
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -109,6 +117,9 @@ function Workspace() {
     setResume("");
     setJob("");
     setAck(false);
+    setWeeklyHours(DEFAULT_PREFERENCES.weeklyHours);
+    setTimelineWeeks(DEFAULT_PREFERENCES.timelineWeeks);
+    setCareerGoal("");
     setError(null);
     setResult(null);
     try {
@@ -157,6 +168,49 @@ function Workspace() {
             </Field>
             <Field id="job" label="Target job description" hint="Paste the full posting, including requirements." value={job} onChange={setJob} min={LIMITS.jobMin} max={LIMITS.jobMax} />
           </div>
+
+          <fieldset className="mt-10 border-t border-border pt-8">
+            <legend className="font-display pr-3 text-2xl">Your pace</legend>
+            <p className="mt-1 text-sm text-muted-foreground">The roadmap adapts its workload to the time you actually have.</p>
+            <div className="mt-6 grid gap-6 sm:grid-cols-3">
+              <div>
+                <label htmlFor="weekly-hours" className="text-sm font-medium">Hours per week</label>
+                <input
+                  id="weekly-hours"
+                  type="number"
+                  min={1}
+                  max={40}
+                  value={weeklyHours}
+                  onChange={(e) => setWeeklyHours(Number(e.target.value))}
+                  className="mt-2 w-full rounded-sm border border-border bg-paper px-3 py-2 text-sm outline-none focus:border-foreground"
+                />
+              </div>
+              <div>
+                <label htmlFor="timeline-weeks" className="text-sm font-medium">Target timeline (weeks)</label>
+                <input
+                  id="timeline-weeks"
+                  type="number"
+                  min={2}
+                  max={52}
+                  value={timelineWeeks}
+                  onChange={(e) => setTimelineWeeks(Number(e.target.value))}
+                  className="mt-2 w-full rounded-sm border border-border bg-paper px-3 py-2 text-sm outline-none focus:border-foreground"
+                />
+              </div>
+              <div>
+                <label htmlFor="career-goal" className="text-sm font-medium">Career goal <span className="text-muted-foreground">(optional)</span></label>
+                <input
+                  id="career-goal"
+                  type="text"
+                  maxLength={200}
+                  value={careerGoal}
+                  onChange={(e) => setCareerGoal(e.target.value)}
+                  placeholder="e.g. Get this job within 6 months"
+                  className="mt-2 w-full rounded-sm border border-border bg-paper px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/70 focus:border-foreground"
+                />
+              </div>
+            </div>
+          </fieldset>
 
           <div className="mt-10 grid gap-6 border-t border-border pt-8 md:grid-cols-12 md:items-start">
             <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed md:col-span-8">

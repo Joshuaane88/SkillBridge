@@ -47,8 +47,10 @@ export function Results({ result, onReset }: { result: AnalysisResult; onReset: 
   }, [result.skills]);
   const total = result.skills.length || 1;
   const shown = filter === "all" ? result.skills : result.skills.filter((s) => s.status === filter);
-  const totalSteps = result.roadmap.reduce((n, r) => n + r.steps.length, 0);
+  const totalSteps = result.thisWeek.length + result.roadmap.length;
   const doneSteps = Object.values(done).filter(Boolean).length;
+  const coreItems = result.roadmap.filter((r) => r.tier === "core");
+  const advancedItems = result.roadmap.filter((r) => r.tier === "advanced");
 
   const exportMd = () => {
     const blob = new Blob([analysisToMarkdown(result, done)], { type: "text/markdown" });
@@ -73,6 +75,7 @@ export function Results({ result, onReset }: { result: AnalysisResult; onReset: 
           <p className="eyebrow">Skill analysis for</p>
           <h1 className="font-display mt-3 text-4xl font-light leading-tight sm:text-5xl">{result.roleTitle}</h1>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">{result.summary}</p>
+          {result.mentorNote ? <p className="mt-4 max-w-2xl leading-relaxed">{result.mentorNote}</p> : null}
         </div>
         <div className="no-print flex flex-wrap items-start gap-2 md:col-span-4 md:justify-end">
           <button onClick={() => window.print()} className="inline-flex items-center gap-2 rounded-sm border border-border px-3 py-2 text-sm hover:border-foreground">
@@ -185,47 +188,93 @@ export function Results({ result, onReset }: { result: AnalysisResult; onReset: 
 
       <section className={cn("mt-8", tab !== "roadmap" && "hidden print:block")}>
         <h2 className="print-only font-display mb-4 mt-8 text-2xl">Roadmap</h2>
+
+        {result.thisWeek.length ? (
+          <div className="mb-12 border-l-2 border-primary bg-paper px-5 py-4">
+            <h3 className="font-display text-xl">What to do this week</h3>
+            <ul className="mt-4 space-y-2 text-sm leading-relaxed">
+              {result.thisWeek.map((t, i) => {
+                const k = `week-${i}`;
+                return (
+                  <li key={k}>
+                    <label className="flex cursor-pointer items-start gap-3">
+                      <input type="checkbox" checked={!!done[k]} onChange={() => toggle(k)} className="peer sr-only" />
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-foreground/50 peer-focus-visible:ring-2 peer-focus-visible:ring-ring",
+                          done[k] && "border-primary bg-primary text-primary-foreground",
+                        )}
+                      >
+                        {done[k] ? <Check className="h-3 w-3" /> : null}
+                      </span>
+                      <span className={cn(done[k] && "text-muted-foreground line-through")}>{t}</span>
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : null}
+
         {result.roadmap.length === 0 ? (
           <p className="py-10 text-center text-muted-foreground">No priority gaps were identified.</p>
         ) : (
-          <ol className="space-y-12">
-            {result.roadmap.map((r, i) => (
-              <li key={r.skill} className="grid gap-6 md:grid-cols-12">
-                <div className="md:col-span-4">
-                  <span className="font-mono text-sm text-primary">{String(i + 1).padStart(2, "0")}</span>
-                  <h3 className="font-display mt-2 text-2xl">{r.skill}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{r.estimatedEffort}</p>
-                </div>
-                <div className="space-y-4 text-sm leading-relaxed md:col-span-8">
-                  <p><span className="eyebrow mr-2">Objective</span>{r.objective}</p>
-                  <p><span className="eyebrow mr-2">Project</span>{r.projectIdea}</p>
-                  <p><span className="eyebrow mr-2">Resources</span>{r.resourceCategory}</p>
-                  <ul className="space-y-2 pt-2">
-                    {r.steps.map((st, j) => {
-                      const k = `${i}-${j}`;
+          <>
+            <div className="mb-12 rounded-sm border border-border bg-paper p-6">
+              <p className="eyebrow">One project that ties it together</p>
+              <h3 className="font-display mt-2 text-2xl">{result.portfolioProject.title}</h3>
+              <p className="mt-3 max-w-3xl text-sm leading-relaxed">{result.portfolioProject.description}</p>
+              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">{result.portfolioProject.whyItFits}</p>
+            </div>
+
+            {([
+              ["Core priorities", coreItems],
+              ["Optional, when you have room", advancedItems],
+            ] as const).map(([heading, items]) =>
+              items.length === 0 ? null : (
+                <div key={heading} className="mb-12">
+                  <h3 className="eyebrow mb-6">{heading}</h3>
+                  <ol className="space-y-12">
+                    {items.map((r) => {
+                      const i = result.roadmap.indexOf(r);
+                      const k = `item-${i}`;
                       return (
-                        <li key={k}>
-                          <label className="flex cursor-pointer items-start gap-3">
-                            <input type="checkbox" checked={!!done[k]} onChange={() => toggle(k)} className="peer sr-only" />
-                            <span
-                              aria-hidden
-                              className={cn(
-                                "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-foreground/50 peer-focus-visible:ring-2 peer-focus-visible:ring-ring",
-                                done[k] && "border-primary bg-primary text-primary-foreground",
-                              )}
-                            >
-                              {done[k] ? <Check className="h-3 w-3" /> : null}
-                            </span>
-                            <span className={cn(done[k] && "text-muted-foreground line-through")}>{st}</span>
-                          </label>
+                        <li key={r.skill} className="grid gap-6 md:grid-cols-12">
+                          <div className="md:col-span-4">
+                            <span className="font-mono text-sm text-primary">{String(i + 1).padStart(2, "0")}</span>
+                            <h4 className="font-display mt-2 text-2xl">{r.skill}</h4>
+                            <p className="mt-2 text-sm text-muted-foreground">{r.estimatedEffort}</p>
+                            <label className="no-print mt-4 flex cursor-pointer items-start gap-3 text-sm">
+                              <input type="checkbox" checked={!!done[k]} onChange={() => toggle(k)} className="peer sr-only" />
+                              <span
+                                aria-hidden
+                                className={cn(
+                                  "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-foreground/50 peer-focus-visible:ring-2 peer-focus-visible:ring-ring",
+                                  done[k] && "border-primary bg-primary text-primary-foreground",
+                                )}
+                              >
+                                {done[k] ? <Check className="h-3 w-3" /> : null}
+                              </span>
+                              <span className={cn(done[k] && "text-muted-foreground line-through")}>Mark this step complete</span>
+                            </label>
+                          </div>
+                          <div className="space-y-4 text-sm leading-relaxed md:col-span-8">
+                            <p><span className="eyebrow mr-2">Why it matters</span>{r.whyItMatters}</p>
+                            <p><span className="eyebrow mr-2">What to learn</span>{r.whatToLearn}</p>
+                            <p><span className="eyebrow mr-2">How to learn it</span>{r.howToLearn}</p>
+                            <p><span className="eyebrow mr-2">Build or practice</span>{r.buildOrPractice}</p>
+                            <p><span className="eyebrow mr-2">You'll know it's done when</span>{r.doneWhen}</p>
+                            <p className="text-muted-foreground"><span className="eyebrow mr-2">Where to look</span>{r.resourceCategory}</p>
+                          </div>
                         </li>
                       );
                     })}
-                  </ul>
+                  </ol>
                 </div>
-              </li>
-            ))}
-          </ol>
+              ),
+            )}
+          </>
         )}
       </section>
 

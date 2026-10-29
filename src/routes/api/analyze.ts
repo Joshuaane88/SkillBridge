@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { analyzeRequestSchema, LIMITS } from "@/lib/analysis";
+import { analyzeRequestSchema, DEFAULT_PREFERENCES, LIMITS } from "@/lib/analysis";
 import { createRateLimiter } from "@/lib/rate-limit";
 
 // 5 analyses per client per 10 minutes, 100 per instance per 10 minutes.
@@ -68,9 +68,21 @@ export const Route = createFileRoute("/api/analyze")({
         const parsed = analyzeRequestSchema.safeParse(body);
         if (!parsed.success) return json({ error: parsed.error.issues[0]?.message ?? "Invalid input." }, 400);
 
-        const { runAnalysis, AiConfigError, AiUpstreamError } = await import("@/lib/analyze.server");
+        let mod: typeof import("@/lib/analyze.server");
         try {
-          const analysis = await runAnalysis(parsed.data.resume, parsed.data.jobDescription, request.signal);
+          mod = await import("@/lib/analyze.server");
+        } catch {
+          console.error("[analyze] AI module failed to load");
+          return json({ error: "The analysis service failed to start. Please try again." }, 503);
+        }
+        const { runAnalysis, AiConfigError, AiUpstreamError } = mod;
+        try {
+          const analysis = await runAnalysis(
+            parsed.data.resume,
+            parsed.data.jobDescription,
+            parsed.data.preferences ?? DEFAULT_PREFERENCES,
+            request.signal,
+          );
           return json({ analysis });
         } catch (err) {
           // Never log submitted content; log only the error category.
