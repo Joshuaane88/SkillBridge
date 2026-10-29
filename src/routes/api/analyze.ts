@@ -70,7 +70,12 @@ export const Route = createFileRoute("/api/analyze")({
 
         const { runAnalysis, AiConfigError, AiUpstreamError } = await import("@/lib/analyze.server");
         try {
-          const analysis = await runAnalysis(parsed.data.resume, parsed.data.jobDescription, request.signal);
+          const analysis = await runAnalysis(
+            parsed.data.resume,
+            parsed.data.jobDescription,
+            parsed.data.preferences ?? DEFAULT_PREFERENCES,
+            request.signal,
+          );
           return json({ analysis });
         } catch (err) {
           // Never log submitted content; log only the error category.

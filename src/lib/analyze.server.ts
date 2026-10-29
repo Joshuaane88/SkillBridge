@@ -39,31 +39,17 @@ export class AiUpstreamError extends Error {
   }
 }
 
-export async function runAnalysis(resume: string, jobDescription: string, signal: AbortSignal): Promise<Analysis> {
+export async function runAnalysis(resume: string, jobDescription: string, preferences: Preferences, signal: AbortSignal): Promise<Analysis> {
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new AiConfigError("missing key");
-
-  let upstreamStatus = 0;
-  const provider = createOpenAI({
-    baseURL: GATEWAY,
-    apiKey,
-    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-    fetch: async (input, init) => {
-      const res = await fetch(input, init);
-      if (!res.ok) upstreamStatus = res.status;
-      return res;
-    },
-  });
-
-  const esc = (s: string) => s.replace(/<\/?(resume|job_description)>/gi, "");
-  try {
+...
     const result = streamText({
       model: provider.responses(MODEL),
       instructions: SYSTEM_PROMPT,
       messages: [
         {
           role: "user",
-          content: `<job_description>\n${esc(jobDescription)}\n</job_description>\n\n<resume>\n${esc(resume)}\n</resume>`,
+          content: `<job_description>\n${esc(jobDescription)}\n</job_description>\n\n<resume>\n${esc(resume)}\n</resume>\n\n<preferences>\nWeekly study hours: ${preferences.weeklyHours}\nTarget timeline: ${preferences.timelineWeeks} weeks\nCareer goal: ${esc(preferences.careerGoal?.trim() || "Get this job")}\n</preferences>`,
         },
       ],
       output: Output.object({ schema: analysisSchema, name: "skill_analysis" }),
