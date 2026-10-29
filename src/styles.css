@@ -59,6 +59,10 @@
   --destructive: oklch(0.5 0.17 28);
   --destructive-foreground: oklch(0.975 0.008 84);
   --stone: oklch(0.81 0.017 80);
+  --logo-face: var(--foreground);
+  --logo-bridge: var(--primary);
+  --logo-depth: var(--stone);
+  --logo-support: var(--stone);
   --border: oklch(0.81 0.017 80);
   --input: oklch(0.81 0.017 80);
   --ring: oklch(0.415 0.105 10);
@@ -119,24 +123,30 @@
   }
 }
 
-@keyframes draw-arc {
-  0% {
-    stroke-dashoffset: 1;
-  }
-  55%,
-  80% {
-    stroke-dashoffset: 0;
-  }
-  100% {
-    stroke-dashoffset: -1;
-  }
-}
-
-@utility arc-draw {
+.sb-logo { overflow: visible; }
+.sb-logo-assembling .sb-bridge path {
   stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: draw-arc 2.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  animation: bridge-assemble 0.65s cubic-bezier(0.25, 0.65, 0.3, 1) both;
 }
+.sb-logo-assembling .sb-arch { animation-delay: 0.2s; }
+.sb-logo-assembling .sb-spandrels { animation-delay: 0.4s; }
+.sb-logo-assembling .sb-deck { animation-delay: 0.55s; }
+.sb-logo-assembling .sb-letters {
+  animation: letters-settle 1s cubic-bezier(0.22, 0.65, 0.3, 1) 1.15s both;
+}
+@keyframes bridge-assemble {
+  from { stroke-dashoffset: 1; opacity: 0; }
+  to { stroke-dashoffset: 0; opacity: 1; }
+}
+@keyframes letters-settle {
+  0% { opacity: 0; transform: translateY(-14px); }
+  30% { opacity: 1; }
+  75% { transform: translateY(1px); }
+  90% { transform: translateY(-0.5px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.analysis-loading { transition: opacity 0.35s ease; }
+.analysis-loading-leaving { opacity: 0; pointer-events: none; }
 
 @keyframes message-cycle {
   0%,
@@ -163,8 +173,14 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .arc-draw {
+  .sb-logo-assembling .sb-bridge path {
     stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+    animation: none !important;
+  }
+  .sb-logo-assembling .sb-letters {
+    opacity: 1 !important;
+    transform: none !important;
     animation: none !important;
   }
 }

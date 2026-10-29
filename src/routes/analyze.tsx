@@ -53,6 +53,7 @@ function Workspace() {
   const [ack, setAck] = useState(false);
   const [error, setError] = useState<{ msg: string; notConfigured?: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingVisible, setLoadingVisible] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -63,6 +64,7 @@ function Workspace() {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     setLoading(true);
+    setLoadingVisible(true);
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -113,7 +115,7 @@ function Workspace() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      {loading ? <LoadingScreen onCancel={() => abortRef.current?.abort()} /> : null}
+      {loadingVisible ? <LoadingScreen leaving={!loading} onExited={() => setLoadingVisible(false)} onCancel={() => abortRef.current?.abort()} /> : null}
       <div className="no-print mx-auto flex max-w-6xl justify-end px-5 pt-6 sm:px-8">
         <button onClick={clearAll} className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">
           Clear my data
