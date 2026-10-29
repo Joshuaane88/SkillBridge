@@ -47,6 +47,8 @@ export const DEMO_ANALYSIS: Analysis = {
   roleTitle: "Junior Data Analyst — Northfield Logistics",
   summary:
     "The sample resume shows solid evidence of SQL, Python data work, and stakeholder communication. Evidence is lighter for BI tools and experiment design, and there is none for dbt or logistics data. These gaps are learnable with focused projects.",
+  mentorNote:
+    "You've already done the hardest part: real data work for real people. Your clinic internship shows you can pull data with SQL, turn it into something people look at, and present it in a way that changes a decision. That's exactly what this role pays for.\n\nWhat's missing from the page is Tableau and experiment design. The job asks for both explicitly, and your Excel dashboards and regression project are closer to them than you might think — you already know how to build a KPI view and how to model data, just not in these specific tools.\n\nFocus on two things: rebuild your dashboard thinking in Tableau Public, and learn just enough experiment design to run and read an A/B test. Everything else can wait.",
   skills: [
     {
       name: "SQL",
