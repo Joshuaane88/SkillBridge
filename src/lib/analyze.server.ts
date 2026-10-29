@@ -42,7 +42,21 @@ export class AiUpstreamError extends Error {
 export async function runAnalysis(resume: string, jobDescription: string, preferences: Preferences, signal: AbortSignal): Promise<Analysis> {
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new AiConfigError("missing key");
-...
+
+  let upstreamStatus = 0;
+  const provider = createOpenAI({
+    baseURL: GATEWAY,
+    apiKey,
+    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+    fetch: async (input, init) => {
+      const res = await fetch(input, init);
+      if (!res.ok) upstreamStatus = res.status;
+      return res;
+    },
+  });
+
+  const esc = (s: string) => s.replace(/<\/?(resume|job_description|preferences)>/gi, "");
+  try {
     const result = streamText({
       model: provider.responses(MODEL),
       instructions: SYSTEM_PROMPT,
