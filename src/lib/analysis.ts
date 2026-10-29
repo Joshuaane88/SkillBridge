@@ -127,18 +127,27 @@ export function verifyAgainstResume(analysis: Analysis, resume: string): Analysi
   return {
     roleTitle: clean(analysis.roleTitle) || "Target role",
     summary: clean(analysis.summary),
+    mentorNote: clean(analysis.mentorNote),
     skills,
+    portfolioProject: {
+      title: clean(analysis.portfolioProject.title),
+      description: clean(analysis.portfolioProject.description),
+      whyItFits: clean(analysis.portfolioProject.whyItFits),
+    },
     roadmap: analysis.roadmap
       .map((r) => ({
         ...r,
         skill: clean(r.skill),
-        objective: clean(r.objective),
-        projectIdea: clean(r.projectIdea),
-        steps: r.steps.map(clean).filter(Boolean),
+        whyItMatters: clean(r.whyItMatters),
+        whatToLearn: clean(r.whatToLearn),
+        howToLearn: clean(r.howToLearn),
+        buildOrPractice: clean(r.buildOrPractice),
+        doneWhen: clean(r.doneWhen),
         estimatedEffort: clean(r.estimatedEffort),
         resourceCategory: clean(r.resourceCategory),
       }))
       .sort((a, b) => a.priority - b.priority),
+    thisWeek: analysis.thisWeek.map(clean).filter(Boolean).slice(0, 5),
     resumeSuggestions: analysis.resumeSuggestions
       .map((r) => ({ original: clean(r.original), suggestion: clean(r.suggestion), explanation: clean(r.explanation) }))
       .filter((r) => normalize(r.original).length >= 8 && haystack.includes(normalize(r.original))),
