@@ -69,7 +69,12 @@ function Workspace() {
   const run = async () => {
     if (pdfBusy || loading) return;
     setError(null);
-    const parsed = analyzeRequestSchema.safeParse({ resume, jobDescription: job, acknowledged: ack });
+    const parsed = analyzeRequestSchema.safeParse({
+      resume,
+      jobDescription: job,
+      acknowledged: ack,
+      preferences: { weeklyHours, timelineWeeks, careerGoal: careerGoal.trim() || undefined },
+    });
     if (!parsed.success) return setError({ msg: parsed.error.issues[0]?.message ?? "Please check your input." });
     const ctrl = new AbortController();
     abortRef.current = ctrl;
