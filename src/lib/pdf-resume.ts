@@ -41,7 +41,7 @@ export async function extractPdfResume(file: File, signal: AbortSignal, onProgre
   ]);
   signal.throwIfAborted();
   pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
-  const task = pdfjs.getDocument({ data: bytes, isEvalSupported: false, useSystemFonts: true });
+  const task = pdfjs.getDocument({ data: bytes, useSystemFonts: true });
   const cancel = () => { void task.destroy().catch(() => undefined); };
   signal.addEventListener("abort", cancel, { once: true });
   try {
