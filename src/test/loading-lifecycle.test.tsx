@@ -7,6 +7,13 @@ vi.mock("@/components/SiteChrome", () => ({ SiteHeader: () => null, SiteFooter: 
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
+function finishTransition() {
+  // jsdom has no TransitionEvent constructor; supply its real property explicitly.
+  const event = new Event("transitionend", { bubbles: true });
+  Object.defineProperty(event, "propertyName", { value: "opacity" });
+  fireEvent(screen.getByRole("status"), event);
+}
+
 function start() {
   const Workspace = Route.options.component;
   if (!Workspace) throw new Error("Workspace is missing");
@@ -26,7 +33,7 @@ describe("Request-driven loading", () => {
     expect(screen.queryByRole("button", { name: "New analysis" })).not.toBeInTheDocument();
     await act(async () => { resolve?.(new Response(JSON.stringify({ analysis: DEMO_ANALYSIS }), { status: 200 })); });
     await waitFor(() => expect(screen.getByRole("button", { name: "New analysis" })).toBeInTheDocument());
-    fireEvent.transitionEnd(screen.getByRole("status"), { propertyName: "opacity" });
+    finishTransition();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
@@ -40,7 +47,7 @@ describe("Request-driven loading", () => {
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     await act(async () => { await Promise.resolve(); });
     expect(signal?.aborted).toBe(true);
-    fireEvent.transitionEnd(screen.getByRole("status"), { propertyName: "opacity" });
+    finishTransition();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
