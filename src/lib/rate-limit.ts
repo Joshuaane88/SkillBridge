@@ -11,7 +11,7 @@ export function createRateLimiter(opts: { perKey: number; windowMs: number; glob
     const mine = (hits.get(key) ?? []).filter((t) => t > cutoff);
     if (mine.length >= opts.perKey || global.length >= opts.globalPerWindow) {
       const oldest = mine.length >= opts.perKey ? mine[0] : global[0];
-      return { ok: false, retryAfterSec: Math.max(1, Math.ceil((oldest + opts.windowMs - now) / 1000)) };
+      return { ok: false, retryAfterSec: Math.max(1, Math.ceil(((oldest ?? now) + opts.windowMs - now) / 1000)) };
     }
     mine.push(now);
     global.push(now);

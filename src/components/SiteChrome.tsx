@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "./Logo";
 
-const GITHUB_URL = import.meta.env.VITE_GITHUB_URL as string | undefined;
+const GITHUB_URL = import.meta.env['VITE_GITHUB_URL'] as string | undefined;
 
 export function SiteHeader() {
   return (
